@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>CI/CD Demo - Static Website</title>
+</head>
+<body>
+  <h1>CI/CD Pipeline Demo</h1>
+  <p>Deployed automatically via AWS CodePipeline → CodeBuild → CodeDeploy → EC2</p>
+  <p>Last deployed: <span id="time"></span></p>
+  <script>
+    document.getElementById('time').innerText = new Date().toLocaleString();
+  </script>
+</body>
+</html>
