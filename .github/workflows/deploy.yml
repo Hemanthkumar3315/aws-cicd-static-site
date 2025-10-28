@@ -3,7 +3,7 @@ name: 🚀 Deploy Static Website to GitHub Pages
 on:
   push:
     branches:
-      - main  # Trigger workflow on push to main branch
+      - main
 
 permissions:
   contents: read
@@ -16,44 +16,43 @@ concurrency:
 
 jobs:
   build:
-    name: Build and Deploy
+    name: Build and Prepare Site
     runs-on: ubuntu-latest
+
     steps:
-      # Step 1: Checkout your repository
-      - name: 📥 Checkout Repository
+      - name: 📥 Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Set up Node.js (optional — for JS-based builds)
-      - name: ⚙️ Setup Node.js
+      - name: ⚙️ Setup Node.js (optional)
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      # Step 3: Install dependencies (safe even if none)
-      - name: 🏗️ Build Website
+      - name: 🧱 Prepare public directory (rsync safe copy)
         run: |
-          if [ -f package.json ]; then
-            npm install
-          else
-            echo "No dependencies to install"
-          fi
-          echo "Building static website..."
-          mkdir -p ./public
-          cp -r * ./public/
+          echo "Preparing public/ folder..."
+          # ensure rsync installed
+          sudo apt-get update -y
+          sudo apt-get install -y rsync
+          # create/clean public folder
+          rm -rf public
+          mkdir -p public
+          # copy everything except .git, .github and public into public/
+          rsync -av --exclude='public' --exclude='.git' --exclude='.github' ./ ./public/
 
-      # Step 4: Upload the built site
-      - name: 📦 Upload Artifact
+      - name: 📦 Upload artifact for Pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./public
 
   deploy:
-    name: 🚀 Deploy to GitHub Pages
+    name: Deploy to GitHub Pages
     needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - name: 🚀 Deploy to GitHub Pages
         id: deployment
