@@ -16,28 +16,44 @@ concurrency:
 
 jobs:
   build:
+    name: Build and Deploy
     runs-on: ubuntu-latest
     steps:
+      # Step 1: Checkout your repository
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
+      # Step 2: Set up Node.js (optional — for JS-based builds)
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      # Step 3: Install dependencies (safe even if none)
       - name: 🏗️ Build Website
         run: |
+          if [ -f package.json ]; then
+            npm install
+          else
+            echo "No dependencies to install"
+          fi
           echo "Building static website..."
           mkdir -p ./public
           cp -r * ./public/
 
+      # Step 4: Upload the built site
       - name: 📦 Upload Artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./public
 
   deploy:
-    environment:
-      name: github-pages    # ✅ This line fixes the error
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    name: 🚀 Deploy to GitHub Pages
     needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: 🚀 Deploy to GitHub Pages
         id: deployment
